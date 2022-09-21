@@ -14,7 +14,7 @@ const getUserById = (req, res) => {
     .orFail(() => {
       throw new Error('Пользователь по указанному id не найден');
     })
-    .then((users) => res.status(200).send({ data: users }))
+    .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.statusCode === NOT_FOUND) {
         res.status(NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
@@ -29,7 +29,7 @@ const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
     .then((user) => res.status(200).send({
-      user: user._id, name, about, avatar,
+      _id: user._id, name, about, avatar,
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
