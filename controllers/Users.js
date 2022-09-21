@@ -12,11 +12,11 @@ const getUser = (req, res) => {
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => {
-      throw new Error('Пользователь по указанному id не найден');
+      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === NOT_FOUND) {
+      if (err.statusCode === 404) {
         res.status(NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
       } else if (err.name === 'ValidationError' || err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Неверный формат id' });

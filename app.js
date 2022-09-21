@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const userRouter = require('./routes/Users');
 const cardRouter = require('./routes/cards');
-const { BAD_REQUEST } = require('./errors/errors');
+const { NOT_FOUND } = require('./errors/errors');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -22,7 +22,7 @@ app.use((req, res, next) => {
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 app.use('*', (req, res) => {
-  res.status(BAD_REQUEST).send({ message: 'Страница не найдена' });
+  res.status(NOT_FOUND).send({ message: 'Страница не найдена' });
 });
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
