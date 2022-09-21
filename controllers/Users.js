@@ -4,7 +4,7 @@ const { BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR } = require('../errors/err
 
 const getUser = (req, res) => {
   User.find({})
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.status(200).send({ data: users }))
     .catch(() => {
       res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
     });
@@ -14,7 +14,7 @@ const getUserById = (req, res) => {
     .orFail(() => {
       throw new Error('Пользователь по указанному id не найден');
     })
-    .then((users) => res.send({ data: users }))
+    .then((users) => res.status(200).send({ data: users }))
     .catch((err) => {
       if (err.statusCode === NOT_FOUND) {
         res.status(NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
@@ -28,7 +28,7 @@ const getUserById = (req, res) => {
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then(() => res.send({ name, about, avatar }))
+    .then(() => res.status(200).send({ name, about, avatar }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({

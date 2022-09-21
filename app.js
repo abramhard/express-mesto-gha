@@ -8,8 +8,6 @@ const { BAD_REQUEST } = require('./errors/errors');
 const { PORT = 3000 } = process.env;
 const app = express();
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
-
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -20,12 +18,14 @@ app.use((req, res, next) => {
 
   next();
 });
-app.use(express.json());
-app.use('/', userRouter);
-app.use('/', cardRouter);
+
+app.use('/users', userRouter);
+app.use('/cards', cardRouter);
 app.use('*', (req, res) => {
   res.status(BAD_REQUEST).send({ message: 'Страница не найдена' });
 });
+
+mongoose.connect('mongodb://localhost:27017/mestodb');
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
