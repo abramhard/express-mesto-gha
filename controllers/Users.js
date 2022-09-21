@@ -12,7 +12,7 @@ const getUser = (req, res) => {
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => {
-      throw new Error(`Пользователь по указанному _id ${req.params.userId} не найден`);
+      throw new Error('Пользователь по указанному id не найден');
     })
     .then((users) => res.send({ data: users }))
     .catch((err) => {
@@ -43,14 +43,14 @@ const updateUserInfo = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       } else if (err.name === 'CastError') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
       }
@@ -61,14 +61,14 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
     })
     .then((user) => res.status(200).send({ data: user }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
         res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара' });
       } else if (err.name === 'CastError') {
-        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным _id не найден' });
+        res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
       }
