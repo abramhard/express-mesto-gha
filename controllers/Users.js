@@ -4,7 +4,7 @@ const { BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR } = require('../errors/err
 
 const getUser = (req, res) => {
   User.find({})
-    .then((users) => res.status(200).send({ data: users }))
+    .then((users) => res.send({ data: users }))
     .catch(() => {
       res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
     });
@@ -12,13 +12,13 @@ const getUser = (req, res) => {
 const getUserById = (req, res) => {
   User.findById(req.params.userId)
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
+      throw new Error('NOT_FOUND');
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 404) {
+      if (err.statusCode === 'NOT_FOUND') {
         res.status(NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
-      } else if (err.name === 'ValidationError' || err.name === 'CastError') {
+      } else if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Неверный формат id' });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
@@ -28,8 +28,8 @@ const getUserById = (req, res) => {
 const createUser = (req, res) => {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.status(200).send({
-      _id: user._id, name, about, avatar,
+    .then((user) => res.send({
+      data: user,
     }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
@@ -45,14 +45,14 @@ const updateUserInfo = (req, res) => {
   const { name, about } = req.body;
   User.findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
+      throw new Error('NOT_FOUND');
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля' });
-      } else if (err.name === 'CastError') {
+      if (err.name === 'NOT_FOUND') {
         res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
+      } else if (err.name === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении профиля' });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
       }
@@ -63,14 +63,14 @@ const updateAvatar = (req, res) => {
 
   User.findByIdAndUpdate(req.user._id, { avatar }, { new: true, runValidators: true })
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
+      throw new Error('NOT_FOUND');
     })
-    .then((user) => res.status(200).send({ data: user }))
+    .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара' });
-      } else if (err.name === 'CastError') {
+      if (err.name === 'NOT_FOUND') {
         res.status(NOT_FOUND).send({ message: 'Пользователь с указанным id не найден' });
+      } else if (err.name === 'ValidationError') {
+        res.status(BAD_REQUEST).send({ message: 'Переданы некорректные данные при обновлении аватара' });
       } else {
         res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
       }

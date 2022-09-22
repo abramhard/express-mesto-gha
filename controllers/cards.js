@@ -31,11 +31,13 @@ const likeCard = (req, res) => {
     { new: true },
   )
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+      throw new Error('NOT_FOUND');
     })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NOT_FOUND') {
+        res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+      } else if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({
           message: 'Переданы некорректные данные для постановки лайка',
         });
@@ -52,11 +54,13 @@ const dislikeCard = (req, res) => {
     { new: true },
   )
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+      throw new Error('NOT_FOUND');
     })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NOT_FOUND') {
+        res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+      } else if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({
           message: 'Переданы некорректные данные для снятия лайка',
         });
@@ -68,11 +72,13 @@ const dislikeCard = (req, res) => {
 const deleteCard = (req, res) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(() => {
-      res.status(NOT_FOUND).send({ message: 'Карточка с указанным id не найдена' });
+      throw new Error('NOT_FOUND');
     })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
-      if (err.name === 'CastError') {
+      if (err.name === 'NOT_FOUND') {
+        res.status(NOT_FOUND).send({ message: 'Карточка с указанным id не найдена' });
+      } else if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({
           message: 'Переданы некорректные данные',
         });
