@@ -16,7 +16,7 @@ const getUserById = (req, res) => {
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
-      if (err.statusCode === 'NOT_FOUND') {
+      if (err.message === 'NOT_FOUND') {
         res.status(NOT_FOUND).send({ message: 'Пользователь по указанному id не найден' });
       } else if (err.name === 'CastError') {
         res.status(BAD_REQUEST).send({ message: 'Неверный формат id' });
