@@ -1,30 +1,27 @@
 const Card = require('../models/card');
 
-const { BAD_REQUEST, NOT_FOUND, INTERNAL_SERVER_ERROR } = require('../errors/errors');
+const { BadRequest } = require('../errors/Bad-Request');
+const { NotFound } = require('../errors/NotFound');
+const { ForbiddenError } = require('../errors/ForbiddenError');
 
-const getCards = (req, res) => {
+const getCards = (req, res, next) => {
   Card.find({})
     .then((cards) => res.status(200).send({ data: cards }))
-    .catch(() => {
-      res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
-    });
+    .catch((err) => next(err));
 };
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   const owner = req.user._id;
   Card.create({ name, link, owner })
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.name === 'ValidationError') {
-        res.status(BAD_REQUEST).send({
-          message: 'Переданы некорректные данные при создании карточки',
-        });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
+        next(new BadRequest('Переданы некорректные данные при создании карточки'));
       }
+      next(err);
     });
 };
-const likeCard = (req, res) => {
+const likeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -36,18 +33,15 @@ const likeCard = (req, res) => {
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.message === 'NOT_FOUND') {
-        res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+        next(new NotFound('Передан несуществующий id карточки'));
       } else if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({
-          message: 'Переданы некорректные данные для постановки лайка',
-        });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
+        next(new BadRequest('Переданы некорректные данные для постановки лайка'));
       }
+      next(err);
     });
 };
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -59,32 +53,32 @@ const dislikeCard = (req, res) => {
     .then((card) => res.status(200).send({ data: card }))
     .catch((err) => {
       if (err.message === 'NOT_FOUND') {
-        res.status(NOT_FOUND).send({ message: 'Передан несуществующий id карточки' });
+        next(new NotFound('Передан несуществующий id карточки'));
       } else if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({
-          message: 'Переданы некорректные данные для снятия лайка',
-        });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
+        next(new BadRequest('Переданы некорректные данные для снятия лайка'));
       }
+      next(err);
     });
 };
-const deleteCard = (req, res) => {
+const deleteCard = (req, res, next) => {
   Card.findByIdAndRemove(req.params.cardId)
     .orFail(() => {
       throw new Error('NOT_FOUND');
     })
-    .then((card) => res.status(200).send({ data: card }))
+    .then((card) => {
+      if (card.owner.toString() !== req.user._id) {
+        throw new ForbiddenError('Нельзя удалить чужую карточку');
+      }
+      return card.remove()
+        .then(() => res.send({ message: 'Карточка удалена' }));
+    })
     .catch((err) => {
       if (err.message === 'NOT_FOUND') {
-        res.status(NOT_FOUND).send({ message: 'Карточка с указанным id не найдена' });
+        next(new NotFound('Карточка с указанным id не найдена'));
       } else if (err.name === 'CastError') {
-        res.status(BAD_REQUEST).send({
-          message: 'Переданы некорректные данные',
-        });
-      } else {
-        res.status(INTERNAL_SERVER_ERROR).send({ message: 'Неожиданная ошибка' });
+        next(new BadRequest('Переданы некорректные данные'));
       }
+      next(err);
     });
 };
 
