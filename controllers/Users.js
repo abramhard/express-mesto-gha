@@ -1,4 +1,3 @@
-const { NODE_ENV, JWT_SECRET } = process.env;
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
@@ -33,7 +32,7 @@ const getInfoAboutUser = (req, res, next) => {
       if (!user) {
         throw new NotFound('Пользователь по указанному id не найден');
       }
-      res.send({ data: user });
+      res.send(user);
     })
     .catch((err) => next(err));
 };
@@ -105,22 +104,20 @@ const updateAvatar = (req, res, next) => {
 };
 const login = (req, res, next) => {
   const { email, password } = req.body;
+
   return User.findUserByCredentials(email, password)
     .then((user) => {
       const token = jwt.sign(
         { _id: user._id },
-        NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret',
+        process.env.JWT_SECRET,
         { expiresIn: '7d' },
       );
-      res.cookie('jwt', token, {
-        maxAge: 3600000 * 24,
-        httpOnly: true,
-      })
-        .send({ token });
+      res.send({ token });
     })
-    .catch((err) => next(err));
+    .catch((err) => {
+      next(err);
+    });
 };
-
 module.exports = {
   getUser,
   getUserById,

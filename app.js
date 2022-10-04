@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
+require('dotenv').config();
 const { celebrate, Joi, errors } = require('celebrate');
 const mongoose = require('mongoose');
 const userRouter = require('./routes/Users');
@@ -12,11 +12,12 @@ const { regex } = require('./utils/regex');
 
 const { PORT = 3000 } = process.env;
 const app = express();
+mongoose.connect('mongodb://localhost:27017/mestodb', {
+  useNewUrlParser: true,
+});
 
-app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
 app.use(auth);
 app.use('/users', userRouter);
 app.use('/cards', cardRouter);
@@ -37,7 +38,7 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use('*', (req, res, next) => {
+app.use(auth, (req, res, next) => {
   next(new NotFound('Страница не найдена'));
 });
 app.use((err, req, res, next) => {
@@ -51,10 +52,6 @@ app.use((err, req, res, next) => {
 });
 
 app.use(errors());
-
-mongoose.connect('mongodb://localhost:27017/mestodb', {
-  useNewUrlParser: true,
-});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console

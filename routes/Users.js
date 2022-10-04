@@ -6,12 +6,12 @@ const {
 } = require('../controllers/Users');
 
 router.get('/', getUser);
+router.get('/me', getInfoAboutUser);
 router.get('/:userId', celebrate({
   params: Joi.object().keys({
     id: Joi.string().required().hex().length(24),
   }),
 }), getUserById);
-router.get('/me', getInfoAboutUser);
 router.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
