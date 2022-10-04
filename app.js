@@ -17,6 +17,10 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
+app.use(auth);
+app.use('/users', userRouter);
+app.use('/cards', cardRouter);
+
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -33,10 +37,8 @@ app.post('/signup', celebrate({
   }),
 }), createUser);
 
-app.use('/users', auth, userRouter);
-app.use('/cards', auth, cardRouter);
-app.use('*', (req, res) => {
-  res.status(NotFound).send({ message: 'Страница не найдена' });
+app.use('*', (req, res, next) => {
+  next(new NotFound('Страница не найдена'));
 });
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
@@ -47,9 +49,12 @@ app.use((err, req, res, next) => {
   });
   next();
 });
+
 app.use(errors());
 
-mongoose.connect('mongodb://localhost:27017/mestodb');
+mongoose.connect('mongodb://localhost:27017/mestodb', {
+  useNewUrlParser: true,
+});
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
