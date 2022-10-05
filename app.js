@@ -41,7 +41,7 @@ app.use(auth);
 app.use('/users', userRouter, (req, res, next) => {
   next();
 });
-app.use('/cards', cardRouter, (req, res, next) => {
+app.use('/', cardRouter, (req, res, next) => {
   next();
 });
 
