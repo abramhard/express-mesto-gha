@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 const isEmail = require('validator/lib/isEmail');
 const bcrypt = require('bcryptjs');
-const { Unauthorized } = require('../errors/Unauthorized');
+const Unauthorized = require('../errors/Unauthorized');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -47,16 +47,16 @@ userSchema.statics.findUserByCredentials = function (email, password) { // eslin
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
-        throw new Unauthorized('Неправильные почта или пароль');
+        throw new Unauthorized('Передан неверный логин или пароль');
       }
 
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
-            throw new Unauthorized('Неправильные почта или пароль');
+            throw new Unauthorized('Передан неверный логин или пароль');
           }
 
-          return user; // user доступен
+          return user;
         });
     });
 };
