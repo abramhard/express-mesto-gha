@@ -12,11 +12,11 @@ const getUser = (req, res, next) => {
     .catch((err) => next(err));
 };
 const getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
+  User.findById(req.params.id)
     .orFail(() => {
       throw new Error('NOT_FOUND');
     })
-    .then((user) => res.send({ data: user }))
+    .then((user) => res.send({ user }))
     .catch((err) => {
       if (err.message === 'NOT_FOUND') {
         next(new NotFound('Пользователь по указанному id не найден'));
@@ -38,7 +38,7 @@ const getInfoAboutUser = (req, res, next) => {
 };
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials(email, password)
+  return User.findUserByCredentials({ email, password })
     .then((user) => {
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
       res.cookie('jwt', token, {
