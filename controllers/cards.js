@@ -1,9 +1,9 @@
 /* eslint-disable no-else-return */
 const Card = require('../models/card');
 
-const { BadRequest } = require('../errors/Bad-Request');
-const { NotFound } = require('../errors/NotFound');
-const { ForbiddenError } = require('../errors/ForbiddenError');
+const BadRequest = require('../errors/Bad-Request');
+const NotFound = require('../errors/NotFound');
+const ForbiddenError = require('../errors/ForbiddenError');
 
 const getCards = (req, res, next) => {
   Card.find({})

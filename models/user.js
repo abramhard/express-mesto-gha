@@ -43,7 +43,7 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
-userSchema.statics.findUserByCredentials = function (email, password) { // eslint-disable-line
+userSchema.statics.findUserByCredentials = function (email, password) {// eslint-disable-line
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
