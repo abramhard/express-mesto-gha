@@ -19,17 +19,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.json());
 
-app.post('/signup', celebrate({
-  body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
-    about: Joi.string().min(2).max(30),
-    avatar: Joi.string().pattern(regex),
-    email: Joi.string().min(3).required().email(),
-    password: Joi.string().required(),
-  }),
-}), createUser);
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
@@ -37,13 +27,19 @@ app.post('/signin', celebrate({
   }),
 }), login);
 
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(regex),
+  }),
+}), createUser);
+
 app.use(auth);
-app.use('/users', userRouter, (req, res, next) => {
-  next();
-});
-app.use('/', cardRouter, (req, res, next) => {
-  next();
-});
+app.use('/users', userRouter);
+app.use('/', cardRouter);
 
 app.use('*', (req, res, next) => {
   next(new NotFound('Страница не найдена'));

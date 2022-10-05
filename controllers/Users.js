@@ -38,8 +38,11 @@ const getInfoAboutUser = (req, res, next) => {
 };
 const login = (req, res, next) => {
   const { email, password } = req.body;
-  return User.findUserByCredentials({ email, password })
+  return User.findUserByCredentials(email, password)
     .then((user) => {
+      if (!user) {
+        next(new NotFound('Неправильные почта или пароль'));
+      }
       const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
       res.cookie('jwt', token, {
         maxAge: 3600000 * 24 * 7,

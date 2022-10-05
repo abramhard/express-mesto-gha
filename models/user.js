@@ -43,18 +43,20 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
-userSchema.statics.findUserByCredentials = function searchUser({ email, password }) {
+userSchema.statics.findUserByCredentials = function (email, password) { // eslint-disable-line
   return this.findOne({ email }).select('+password')
     .then((user) => {
       if (!user) {
         throw new Unauthorized('Неправильные почта или пароль');
       }
+
       return bcrypt.compare(password, user.password)
         .then((matched) => {
           if (!matched) {
             throw new Unauthorized('Неправильные почта или пароль');
           }
-          return user;
+
+          return user; // user доступен
         });
     });
 };

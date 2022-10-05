@@ -2,7 +2,7 @@ const { celebrate, Joi } = require('celebrate');
 const router = require('express').Router();
 const { regex } = require('../utils/regex');
 const {
-  getUser, getUserById, updateUserInfo, updateAvatar, getInfoAboutUser,
+  getUser, getUserById, updateUserInfo, updateAvatar, getInfoAboutUser, login,
 } = require('../controllers/Users');
 
 router.get('/', getUser);
@@ -12,6 +12,7 @@ router.get('/:id', celebrate({
     id: Joi.string().required().hex().length(24),
   }),
 }), getUserById);
+router.post('/me', login);
 router.patch('/me', celebrate({
   body: Joi.object().keys({
     name: Joi.string().min(2).max(30),
