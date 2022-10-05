@@ -36,6 +36,21 @@ const getInfoAboutUser = (req, res, next) => {
     })
     .catch((err) => next(err));
 };
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' });
+      res.cookie('jwt', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+      })
+        .send({ token });
+    })
+    .catch((err) => {
+      next(err);
+    });
+};
 const createUser = (req, res, next) => {
   const {
     name,
@@ -52,14 +67,11 @@ const createUser = (req, res, next) => {
       email,
       password: hash,
     }))
-    .then(() => res.send({
-      data: {
-        name,
-        about,
-        avatar,
-        email,
-      },
-    }))
+    .then((user) => {
+      res.send({
+        name: user.name, about: user.about, avatar: user.avatar, email: user.email, _id: user._id,
+      });
+    })
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при создании пользователя.'));
@@ -99,22 +111,6 @@ const updateAvatar = (req, res, next) => {
       } else if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при обновлении аватара'));
       }
-      next(err);
-    });
-};
-const login = (req, res, next) => {
-  const { email, password } = req.body;
-
-  return User.findUserByCredentials(email, password)
-    .then((user) => {
-      const token = jwt.sign(
-        { _id: user._id },
-        process.env.JWT_SECRET,
-        { expiresIn: '7d' },
-      );
-      res.send({ token });
-    })
-    .catch((err) => {
       next(err);
     });
 };
