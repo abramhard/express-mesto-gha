@@ -48,6 +48,7 @@ app.use('/cards', cardRouter, (req, res, next) => {
 app.use('*', (req, res, next) => {
   next(new NotFound('Страница не найдена'));
 });
+app.use(errors());
 app.use((err, req, res, next) => {
   const { statusCode = 500, message } = err;
   res.status(statusCode).send({
@@ -57,8 +58,6 @@ app.use((err, req, res, next) => {
   });
   next();
 });
-
-app.use(errors());
 
 app.listen(PORT, () => {
   // eslint-disable-next-line no-console
