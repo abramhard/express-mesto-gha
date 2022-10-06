@@ -26,10 +26,10 @@ app.post('/signin', validateAuthentication, login);
 
 app.use('/users', auth, userRouter);
 app.use('/', auth, cardRouter);
-
 app.use('*', auth, (req, res, next) => {
   next(new NotFound('Страница не найдена'));
 });
+
 app.use(errors());
 app.use(internalError);
 
