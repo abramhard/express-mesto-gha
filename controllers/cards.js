@@ -20,8 +20,9 @@ const createCard = (req, res, next) => {
     .catch((err) => {
       if (err.name === 'ValidationError') {
         next(new BadRequest('Переданы некорректные данные при создании карточки'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 const likeCard = (req, res, next) => {
@@ -30,17 +31,14 @@ const likeCard = (req, res, next) => {
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
     { new: true },
   )
-    .orFail(() => {
-      throw new Error('NOT_FOUND');
-    })
+    .orFail(() => new NotFound('Передан несуществующий id карточки'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.message === 'NOT_FOUND') {
-        next(new NotFound('Передан несуществующий id карточки'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные для постановки лайка'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
@@ -50,24 +48,19 @@ const dislikeCard = (req, res, next) => {
     { $pull: { likes: req.user._id } }, // убрать _id из массива
     { new: true },
   )
-    .orFail(() => {
-      throw new Error('NOT_FOUND');
-    })
+    .orFail(() => new NotFound('Передан несуществующий id карточки'))
     .then((card) => res.send({ data: card }))
     .catch((err) => {
-      if (err.message === 'NOT_FOUND') {
-        next(new NotFound('Передан несуществующий id карточки'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные для снятия лайка'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 const deleteCard = (req, res, next) => {
   Card.findById(req.params.cardId)
-    .orFail(() => {
-      throw new Error('NOT_FOUND');
-    })
+    .orFail(() => new NotFound('Карточка с указанным id не найдена'))
     .then((card) => {
       if (card.owner.toString() === req.user._id.toString()) {
         return card.remove();
@@ -77,12 +70,11 @@ const deleteCard = (req, res, next) => {
     })
     .then(() => res.send({ message: 'Карточка удалена' }))
     .catch((err) => {
-      if (err.message === 'NOT_FOUND') {
-        next(new NotFound('Карточка с указанным id не найдена'));
-      } else if (err.name === 'CastError') {
+      if (err.name === 'CastError') {
         next(new BadRequest('Переданы некорректные данные'));
+      } else {
+        next(err);
       }
-      next(err);
     });
 };
 
