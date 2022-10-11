@@ -11,6 +11,7 @@ const { login, createUser } = require('./controllers/Users');
 const NotFound = require('./errors/NotFound');
 const { validateUserBody, validateAuthentication } = require('./routes/index');
 const internalError = require('./middlewares/internalError');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const { PORT = 3000 } = process.env;
 const app = express();
@@ -20,6 +21,7 @@ mongoose.connect('mongodb://localhost:27017/mestodb', {
 app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(requestLogger);
 
 app.post('/signup', validateUserBody, createUser);
 app.post('/signin', validateAuthentication, login);
@@ -29,6 +31,7 @@ app.use('/', auth, cardRouter);
 app.use('*', auth, (req, res, next) => {
   next(new NotFound('Страница не найдена'));
 });
+app.use(errorLogger);
 
 app.use(errors());
 app.use(internalError);
